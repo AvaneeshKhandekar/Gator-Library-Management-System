@@ -1,4 +1,4 @@
-#!/usr/venve/  bin/python3
+#!/usr/venve/bin/python3
 import sys
 
 from red_black_tree import RedBlackTree
@@ -108,12 +108,13 @@ class GatorLibrary:
     # function to retrieve and print color flip count
     @staticmethod
     def get_color_flip_count(tree, output_file):
-        output_file.write(f"Color Flip Count: {tree.color_flip_count}\n\n")
+        output_file.write(f"Color Flip Count: {tree.get_color_flips()}\n\n")
 
     # function to terminate the program
     @staticmethod
     def terminate(output_file):
         output_file.write("Program Terminated!!")
+        exit(0)
 
     # main function to read input file and open output file
     @staticmethod

@@ -6,11 +6,11 @@ class PriorityMinHeap:
 
     def __init__(self):
         self.heap = []
-        self.heap_size = len(self.heap)
+        self.heap_size = 0
 
     # add new element to the heap
     def push(self, patron_id, priority):
-        if self.heap_size != PriorityMinHeap.MAX_SIZE:
+        if self.heap_size < PriorityMinHeap.MAX_SIZE:
             node = HeapNode(patron_id, priority)
             self.heap.append(node)
             self.heap_size += 1
@@ -30,7 +30,7 @@ class PriorityMinHeap:
         self.heap_size -= 1
         return popped
 
-    # function to swap elements at given positions for heapifying
+    # function to swap elements at given positions
     @staticmethod
     def swap(nodes, i, j):
         nodes[i], nodes[j] = nodes[j], nodes[i]
@@ -39,39 +39,38 @@ class PriorityMinHeap:
     # greater priority of arrives first in case of same priority.
     @staticmethod
     def compare_nodes(node1, node2):
-        return (node1.priority < node2.priority) or \
-            (node1.priority == node2.priority and node1.timestamp < node2.timestamp)
+        if node1.priority < node2.priority:
+            return True
+        elif node1.priority == node2.priority and node1.timestamp <= node2.timestamp:
+            return True
+        return False
 
     # function to fix heap properties while inserting (from index up to the root)
-    def heapify_up(self, i):
-        while i > 0:
-            parent = (i - 1) // 2
-            if self.heap[parent].priority > self.heap[i].priority or (
-                    self.heap[parent].priority == self.heap[i].priority and
-                    self.heap[parent].timestamp > self.heap[i].timestamp):
-                PriorityMinHeap.swap(self.heap, i, parent)
-                i = parent
+    def heapify_up(self, index):
+        while index > 0:
+            parent = (index - 1) // 2
+            if PriorityMinHeap.compare_nodes(self.heap[index], self.heap[parent]):
+                PriorityMinHeap.swap(self.heap, parent, index)
+                index = parent
             else:
                 break
 
     # function to fix heap properties after deletion from root to leaf
-    def heapify_down(self, i):
+    def heapify_down(self, index):
         while True:
-            left_child = 2 * i + 1
-            right_child = 2 * i + 2
-            smallest = i
+            left_child = 2 * index + 1
+            right_child = 2 * index + 2
+            smallest = index
 
-            if left_child < len(self.heap) and PriorityMinHeap.compare_nodes(self.heap[left_child],
-                                                                             self.heap[smallest]):
+            if left_child < len(self.heap) and PriorityMinHeap.compare_nodes(self.heap[left_child], self.heap[smallest]):
                 smallest = left_child
 
-            if right_child < len(self.heap) and PriorityMinHeap.compare_nodes(self.heap[right_child],
-                                                                              self.heap[smallest]):
+            if right_child < len(self.heap) and PriorityMinHeap.compare_nodes(self.heap[right_child], self.heap[smallest]):
                 smallest = right_child
 
-            if smallest != i:
-                PriorityMinHeap.swap(self.heap, i, smallest)
-                i = smallest
+            if smallest != index:
+                PriorityMinHeap.swap(self.heap, index, smallest)
+                index = smallest
             else:
                 break
 

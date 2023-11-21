@@ -13,8 +13,10 @@ class TreeHelper:
     def set_color(tree, tree_node, color):
         previous_color = tree_node.color
         tree_node.color = color
-        if previous_color != color and tree_node != tree.root:
+        if previous_color != color and not tree_node.color_changed:
             tree.color_flip_count += 1
+            return True
+        return False
 
     # determine insert location in tree
     @staticmethod
@@ -47,19 +49,14 @@ class TreeHelper:
     # Balance the tree after insertion
     @staticmethod
     def balance_after_insert(tree, tree_node):
-        while tree_node.parent.is_red():
-            # if inserted node's parent is left child of grandparent, get right uncle
+        while tree_node.parent is not None and tree_node.parent.is_red():
             if tree_node.parent == tree_node.parent.parent.left:
                 tree_node = TreeHelper.handle_parent_left_of_grandparent(tree, tree_node)
             else:
                 tree_node = TreeHelper.handle_parent_right_of_grand_parent(tree, tree_node)
-            # if new node is root, break
-            if tree_node == tree.root:
-                break
 
-        # set root node to black
-        if tree.root.is_red():
-            TreeHelper.set_color(tree, tree.root, Color.BLACK)
+            # set root node to black
+        tree.root.color_changed = TreeHelper.set_color(tree, tree.root, Color.BLACK)
 
     # insert case when new node's parent is right of it's grandparent
     @staticmethod
@@ -68,17 +65,17 @@ class TreeHelper:
         uncle = tree_node.parent.parent.left
         if uncle.is_red():
             # update node colors of uncle, parent and grandparent
-            TreeHelper.set_color(tree, uncle, Color.BLACK)
-            TreeHelper.set_color(tree, tree_node.parent, Color.BLACK)
-            TreeHelper.set_color(tree, tree_node.parent.parent, Color.RED)
+            uncle.color_changed = TreeHelper.set_color(tree, uncle, Color.BLACK)
+            tree_node.parent.color_changed = TreeHelper.set_color(tree, tree_node.parent, Color.BLACK)
+            tree_node.parent.parent.color_changed = TreeHelper.set_color(tree, tree_node.parent.parent, Color.RED)
             tree_node = tree_node.parent.parent  # update node to node's grandparent
         else:
             # uncle is black, perform necessary rotations and recolor
             if tree_node == tree_node.parent.left:
                 node = tree_node.parent
                 TreeHelper.right_rotation(tree, node)
-            TreeHelper.set_color(tree, tree_node.parent, Color.BLACK)
-            TreeHelper.set_color(tree, tree_node.parent.parent, Color.RED)
+            tree_node.parent.color_changed = TreeHelper.set_color(tree, tree_node.parent, Color.BLACK)
+            tree_node.parent.parent.color_changed = TreeHelper.set_color(tree, tree_node.parent.parent, Color.RED)
             TreeHelper.left_rotation(tree, tree_node.parent.parent)
         return tree_node
 
@@ -89,17 +86,17 @@ class TreeHelper:
         uncle = tree_node.parent.parent.right
         if uncle.is_red():
             # update node colors of uncle, parent and grandparent
-            TreeHelper.set_color(tree, uncle, Color.BLACK)
-            TreeHelper.set_color(tree, tree_node.parent, Color.BLACK)
-            TreeHelper.set_color(tree, tree_node.parent.parent, Color.RED)
+            uncle.color_changed = TreeHelper.set_color(tree, uncle, Color.BLACK)
+            tree_node.parent.color_changed = TreeHelper.set_color(tree, tree_node.parent, Color.BLACK)
+            tree_node.parent.parent.color_changed = TreeHelper.set_color(tree, tree_node.parent.parent, Color.RED)
             tree_node = tree_node.parent.parent  # update node to node's grandparent
         else:
             # uncle is black, perform necessary rotations and recolor
             if tree_node == tree_node.parent.right:
                 tree_node = tree_node.parent
                 TreeHelper.left_rotation(tree, tree_node)
-            TreeHelper.set_color(tree, tree_node.parent, Color.BLACK)
-            TreeHelper.set_color(tree, tree_node.parent.parent, Color.RED)
+            tree_node.parent.color_changed = TreeHelper.set_color(tree, tree_node.parent, Color.BLACK)
+            tree_node.parent.parent.color_changed = TreeHelper.set_color(tree, tree_node.parent.parent, Color.RED)
             TreeHelper.right_rotation(tree, tree_node.parent.parent)
         return tree_node
 
@@ -197,7 +194,7 @@ class TreeHelper:
             successor_node.left.parent = successor_node
 
             # preserve color of target node in successor
-            TreeHelper.set_color(tree, successor_node, target_node.color)
+            successor_node.color_changed = TreeHelper.set_color(tree, successor_node, target_node.color)
         return replacement_node, successor_original_color
 
     # function to balance the tree after deletion
@@ -211,7 +208,7 @@ class TreeHelper:
             else:  # node is right child of its parent
                 tree_node = TreeHelper.handle_node_black_and_right_sibling(tree, tree_node)
         # set final node color to black
-        TreeHelper.set_color(tree, tree_node, Color.BLACK)
+        tree_node.color_changed = TreeHelper.set_color(tree, tree_node, Color.BLACK)
 
     # function to perform rotation and recolor in delete case when deleted node is black and a left child
     @staticmethod
@@ -220,26 +217,26 @@ class TreeHelper:
         sibling = tree_node.parent.right
         if sibling.is_red():
             # sibling is red perform left rotation and update colors
-            TreeHelper.set_color(tree, sibling, Color.BLACK)
-            TreeHelper.set_color(tree, sibling.parent, Color.RED)
+            sibling.color_changed = TreeHelper.set_color(tree, sibling, Color.BLACK)
+            sibling.parent.color_changed = TreeHelper.set_color(tree, sibling.parent, Color.RED)
             TreeHelper.left_rotation(tree, tree_node.parent)
             sibling = tree_node.parent.right
 
         # both children of sibling are black, update colors and move up the tree
         if sibling.left.is_black() and sibling.right.is_black():
-            TreeHelper.set_color(tree, sibling, Color.RED)
+            sibling.color_changed = TreeHelper.set_color(tree, sibling, Color.RED)
             tree_node = tree_node.parent
         else:
             # left child of sibling is black, perform right rotation and update colors
             if sibling.right.is_black():  # right child of sibling is black
-                TreeHelper.set_color(tree, sibling.left, Color.BLACK)
-                TreeHelper.set_color(tree, sibling, Color.RED)
+                sibling.left.color_changed = TreeHelper.set_color(tree, sibling.left, Color.BLACK)
+                sibling.color_changed = TreeHelper.set_color(tree, sibling, Color.RED)
                 TreeHelper.right_rotation(tree, sibling)
                 sibling = tree_node.parent.right
             # update colors and perform left rotation to balance the tree
-            TreeHelper.set_color(tree, sibling, tree_node.parent.color)
-            TreeHelper.set_color(tree, tree_node.parent, Color.BLACK)
-            TreeHelper.set_color(tree, sibling.right, Color.BLACK)
+            sibling.color_changed = TreeHelper.set_color(tree, sibling, tree_node.parent.color)
+            tree_node.parent.color_changed = TreeHelper.set_color(tree, tree_node.parent, Color.BLACK)
+            sibling.right.color_changed = TreeHelper.set_color(tree, sibling.right, Color.BLACK)
             TreeHelper.left_rotation(tree, tree_node.parent)
             tree_node = tree.root
         return tree_node
@@ -251,25 +248,25 @@ class TreeHelper:
         sibling = tree_node.parent.left
         # sibling is red perform right rotation and update colors
         if sibling.is_red():
-            TreeHelper.set_color(tree, sibling, Color.BLACK)
-            TreeHelper.set_color(tree, tree_node.parent, Color.RED)
+            sibling.color_changed = TreeHelper.set_color(tree, sibling, Color.BLACK)
+            tree_node.parent.color_changed = TreeHelper.set_color(tree, tree_node.parent, Color.RED)
             TreeHelper.right_rotation(tree, tree_node.parent)
             sibling = tree_node.parent.left
         # both children of sibling are black, update colors and move up the tree
         if sibling.left.is_black() and sibling.right.is_black():
-            TreeHelper.set_color(tree, sibling, Color.RED)
+            sibling.color_changed = TreeHelper.set_color(tree, sibling, Color.RED)
             tree_node = tree_node.parent
         else:
             # right child of sibling is black, perform left rotation and update colors
             if sibling.left.is_black():
-                TreeHelper.set_color(tree, sibling.right, Color.BLACK)
-                TreeHelper.set_color(tree, sibling, Color.RED)
+                sibling.right.color_changed = TreeHelper.set_color(tree, sibling.right, Color.BLACK)
+                sibling.color_changed = TreeHelper.set_color(tree, sibling, Color.RED)
                 TreeHelper.left_rotation(tree, sibling)
                 sibling = tree_node.parent.left
             # update colors and perform right rotation to balance the tree
-            TreeHelper.set_color(tree, sibling, tree_node.parent.color)
-            TreeHelper.set_color(tree, tree_node.parent, Color.BLACK)
-            TreeHelper.set_color(tree, sibling.left, Color.BLACK)
+            sibling.color_changed = TreeHelper.set_color(tree, sibling, tree_node.parent.color)
+            tree_node.parent.color_changed = TreeHelper.set_color(tree, tree_node.parent, Color.BLACK)
+            sibling.left.color_changed = TreeHelper.set_color(tree, sibling.left, Color.BLACK)
             TreeHelper.right_rotation(tree, tree_node.parent)
             tree_node = tree.root
         return tree_node

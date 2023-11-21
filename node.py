@@ -9,6 +9,7 @@ class TreeNode:
         self.book_id = book_id
         self.parent = self.left = self.right = None
         self.color = Color.RED
+        self.color_changed = False
         self.book_name = self.author_name = self.availability_status = None
         self.borrowed_by = self.reservation_heap = None
 
@@ -34,4 +35,4 @@ class HeapNode:
     def __init__(self, patron_id, priority):
         self.patron_id = patron_id
         self.priority = priority
-        self.timestamp = time.perf_counter()
+        self.timestamp = time.perf_counter_ns()
