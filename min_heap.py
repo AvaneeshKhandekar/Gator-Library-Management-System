@@ -39,11 +39,9 @@ class PriorityMinHeap:
     # greater priority of arrives first in case of same priority.
     @staticmethod
     def compare_nodes(node1, node2):
-        if node1.priority < node2.priority:
-            return True
-        elif node1.priority == node2.priority and node1.timestamp <= node2.timestamp:
-            return True
-        return False
+        if node1.priority == node2.priority:
+            return node1.timestamp < node2.timestamp
+        return node1.priority < node2.priority
 
     # function to fix heap properties while inserting (from index up to the root)
     def heapify_up(self, index):
@@ -76,8 +74,5 @@ class PriorityMinHeap:
 
     # function to return patrons in sorted order without altering original heap
     def get_patrons_sorted(self):
-        heap_copy = PriorityMinHeap()
-        heap_copy.heap = self.heap.copy()
-        heap_copy.heap_size = self.heap_size
-        while heap_copy.heap_size > 0:
-            yield heap_copy.pop().patron_id
+        for x in self.heap:
+            yield x.patron_id
