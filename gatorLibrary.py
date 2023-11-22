@@ -1,4 +1,3 @@
-#!/usr/venve/bin/python3
 import sys
 
 from red_black_tree import RedBlackTree
@@ -59,8 +58,8 @@ class GatorLibrary:
     # function to insert book into tree
     @staticmethod
     def insert_book(line, tree):
-        line = line[11:-1].split(',')
-        tree.insert_book(int(line[0]), line[1].strip(), line[2].strip(), line[3].replace("\"", "").strip())
+        line = line.replace('InsertBook', 'insert_book')
+        exec(f'tree.{line}')
 
     # function to update book details and reservation queue when borrowed and print appropriate message
     @staticmethod
