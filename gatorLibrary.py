@@ -11,8 +11,8 @@ class GatorLibrary:
         for node in nodes:
             if node.book_id is not None:
                 file.write(f"BookID = {node.book_id}\n")
-                file.write(f"Title = {node.book_name}\n")
-                file.write(f"Author = {node.author_name}\n")
+                file.write(f"Title = \"{node.book_name}\"\n")
+                file.write(f"Author = \"{node.author_name}\"\n")
                 file.write(f"Availability = \"{node.availability_status}\"\n")
                 file.write(f"BorrowedBy = {node.borrowed_by or 'None'}\n")
                 file.write(f"Reservations = {list(node.reservation_heap.get_patrons_sorted())}\n\n")
